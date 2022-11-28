@@ -1,72 +1,86 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import styled from "styled-components/native";
 import colors from '../colors';
 import { Ionicons } from "@expo/vector-icons";
 import { AsyncStorage, TouchableOpacity } from 'react-native';
+import { getAuth, signInAnonymously } from 'firebase/auth';
+import { addDoc, collection, getFirestore } from 'firebase/firestore';
+import app from '../firebaseConfig';
+import img from '../assets/backgroundLight.png';
+
+
+
 const HelloView = styled.View`
-  width: 100%;
-  height: 100%;
-  background-color: ${colors.LOGO_COLOR_GREEN};
+   width: 24.375rem;
+  height: 52.75rem;
+  padding: 7.5rem 1.5rem 3.188rem;
+  background-image: url(${img});
 `;
-const HelloTitle = styled.Text`
-  
-width: 300px;
-height: 22px;
-//font-family: 'SF Pro';
-font-style: normal;
-font-weight: 590;
-font-size: 50px;
-line-height: 22px;
-text-align: center;
-color: #FFFFFF;
-flex: none;
-order: 0;
-flex-grow: 0;
-`;
+
 const HelloButton = styled.TouchableOpacity`
- width: 139px;
-  height: 36px;
+ width: 10.688rem;
+  height: 2.25rem;
+  gap: 8px;
+  margin: 2.125rem 6.375rem 11.625rem 6.313rem;
+  padding: 0.5rem;
+  object-fit: contain;
   border-radius: 13px;
-//margin: 38.7% 32.3% 38.7% 32.1% ;
-//gap: 8px;
-background-color: ${colors.SECONDARY_BLUE};
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
 
 `;
 
 const HelloButtonText = styled.Text`
-  width: 123px;
-  height: 20px;
-  font-size: 17px;
+  
+ 
+  
+  font-size: 1.063rem;
   font-weight: bold;
+  font-stretch: normal;
   font-style: normal;
-  letter-spacing: 0;
+  line-height: normal;
+  letter-spacing: normal;
   text-align: left;
  // fontFamily: "SFPro";
  
   color: ${colors.PRIMARY_LIGHT};
 `;
 const LogoImage = styled.Image`
- // margin: 13.5% 14.7% 87.7% 14.7%;
-  width: 342px;
-  height: 124px;
-`;
-const LogoButtom = styled.Image`
-  width: 235px;
-  height: 245.2px;
+ width: 17.375rem;
+  height: 3.827rem;
+  margin: 0 0 21.235rem 2.3rem;
   object-fit: contain;
 `;
 
-const Hello = ({navigation:{navigate}}) => {
 
+
+
+const Hello = ({navigation:{navigate}}) => {
+ 
+  
+  
+  const Anonymous = ()=>{
+    const auth = getAuth();
+    signInAnonymously(auth);
+    
+    navigate("First", {
+      auth:auth.lastNotifiedUid,
+    });
+  }
 
     return(
         <HelloView>
-           <LogoImage source={require('../assets/Logo.title.full.png')} />
-            
-            <HelloButton onPress={()=>navigate("First")}>
+           <LogoImage source={require('../assets/Hello.png')} />
+            <HelloButton onPress={Anonymous}>
                 <HelloButtonText>내 돈 지키러가기</HelloButtonText>
-            </HelloButton>
-        <LogoButtom source={require('../assets/login-profile.png')}/>
+             <HelloButtonText><Ionicons name="chevron-forward" size={24} color={colors.SECONDARY_BLUE} /></HelloButtonText>
+            </HelloButton> 
+            
+            
+
+       
         </HelloView>
     )
 }

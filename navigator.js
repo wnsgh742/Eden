@@ -10,13 +10,13 @@ import Message from "./screens/Message";
 
 const Tabs = createNativeStackNavigator();
 
-const Navigator = () => (
+const Navigator = ({userObj}) => (
   <Tabs.Navigator screenOptions={{ headerShown: false }}>
-    <Tabs.Screen name="Hello" component={Hello} />
+    <Tabs.Screen name="Hello" component={Hello} userObj={userObj}/>
     <Tabs.Screen name="First" component={First} />
     <Tabs.Screen name="Home" component={Home} />
-    <Tabs.Screen name="Write" component={Write}  />
-    <Tabs.Screen name="History" component={History} options={{presentation:"modal"}} />
+    <Tabs.Screen name="Write" component={Write} userObj={userObj}/>
+    <Tabs.Screen name="History" component={History} />
     <Tabs.Screen name="Message" component={Message} />
   </Tabs.Navigator>
 );

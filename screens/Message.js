@@ -3,73 +3,120 @@ import styled from "styled-components/native";
 import colors from '../colors';
 import { Ionicons } from "@expo/vector-icons";
 import { AsyncStorage, TouchableOpacity } from 'react-native';
-const HelloView = styled.View`
-  flex: 1;
-  padding: 0px 50px;
-  padding-top: 100px;
-  background-color: ${colors.bgColor};
+const MainView = styled.View`
+  width: 24.375rem;
+  height: 52.75rem;
+  flex-grow: 0;
+  background-color: ${colors.PRIMARY_LIGHT};
 `;
-const HelloTitle = styled.Text`
-  
-width: 300px;
-height: 22px;
-
-//font-family: 'SF Pro';
-font-style: normal;
-font-weight: 590;
-font-size: 50px;
-line-height: 22px;
-
-text-align: center;
-
-color: #FFFFFF;
-
-flex: none;
-order: 0;
-flex-grow: 0;
+const HeaderView = styled.View`
+ width: 24.375rem;
+  height: 11rem;
+  margin: 0 0 0rem;
+  padding: 2.125rem 0 0.813rem;
+  background-color: ${colors.PRIMARY_MIDDLE};
 `;
-const HelloButton = styled.TouchableOpacity`
-   display: flex;
-flex-direction: row;
-justify-content: center;
-align-items: center;
-padding: 4px;
-gap: 8px;
-
-position: absolute;
-width: 45px;
-height: 45px;
-left: 172px;
-top: 532px;
-
+const HeaderTitle =styled.Text`
+      width: 20.375rem;
+  height: 2.563rem;
+  margin: 1.5rem 2rem 0rem;
+  font-size: 2.125rem;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: ${colors.PRIMARY_TEXT};
 `;
-const HelloText = styled.Text`
-display: flex;
-flex-direction: row;
-justify-content: center;
-align-items: center;
-padding: 8px;
-gap: 8px;
 
-position: absolute;
-width: 72px;
-height: 34px;
-left: 159px;
-top: 497px;
+const Content = styled.TouchableOpacity`
+ width: 17.5rem;
+  height: 3.688rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 3px;
+  margin: 0 0 0 0.75rem;
+  padding: 0;
 
 `;
-const HelloButtonText = styled.Text`
+
+const ContentText = styled.Text`
   
 `;
-const Message = ({navigation:{navigate}}) => {
-    return(
-        <HelloView>
-            <HelloTitle>my Message</HelloTitle>
+const MessageFlatList = styled.FlatList`
+   
+`;
+const EditView =styled.View`
+    width: 24.375rem;
+  height: 0.05rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 289px;
+  margin: 1rem 0 1.5rem;
+  padding: 0 1.875rem 0 0;
+`;
+const EditText = styled.Text`
+    color: ${colors.SECONDARY_BLUE};
+`;
+const Message = ({route,navigation:{navigate}}) => {
+    useEffect(()=>{
+        //getAction();
+    },[])
+    const [message, setMessage] = useState([]); 
+    const [userId, setUserId] = useState(route.params.info);
+    const getAction = async()=>{
+        const data = [];
+        
+       try {
+        const userRef=collection(db,"Message");
+        const userQuery = query(userRef);
+        const userSnapShot = await getDocs(userQuery);
+        userSnapShot.forEach((doc)=>{
             
-            <HelloButton onPress={()=>navigate("Home")}>
-                <HelloButtonText>""</HelloButtonText>
-            </HelloButton>
-        </HelloView>
+            data.push({
+                     ...doc.data()
+                })
+                
+        })
+            
+            setData(data);
+       
+       
+       } catch (err) {
+        alert("aazz")
+       }
+       
+};
+
+    return(
+        <MainView>
+           <HeaderView>
+           <EditView>
+            <TouchableOpacity onPress={()=>navigate("Home",{info:userId})}>
+                <EditText><Ionicons name="chevron-back" size={24} color={colors.SECONDARY_BLUE} /></EditText>
+            </TouchableOpacity>
+            <TouchableOpacity>
+                <EditText>편집</EditText>
+            </TouchableOpacity> 
+            </EditView>
+                <HeaderTitle>Message</HeaderTitle>
+           </HeaderView>
+           <MessageFlatList
+            data={message}
+            renderItem={({item})=>(
+                <Content>
+                    <ContentText></ContentText>
+                </Content>
+            )}
+           />
+           
+            
+        </MainView>
     )
 }
 export default Message;

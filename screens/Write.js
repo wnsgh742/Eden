@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import styled from "styled-components/native";
 import colors from '../colors';
-import { addDoc, collection, getFirestore } from 'firebase/firestore';
+import { addDoc, collection, getDocs, getFirestore, Timestamp } from 'firebase/firestore';
 import app from '../firebaseConfig';
 
 
@@ -37,19 +37,37 @@ const Write = ({navigation:{navigate}})=>{
     const [name, setName] = useState("");
     const [price, setPrice] = useState(Number);
     const [data, setData] = useState([]);
-  
+    const [id, setId] = useState();
+    
   const db = getFirestore(app);
-
+  useEffect(()=>{
+    get();
+  },[])
+const get = async()=>{
+  try {
+    const querySnapshot = await getDocs(collection(db,"userInfo"));
+   querySnapshot.forEach((doc)=>{
+    setId(doc.data().id);
+   })
+    console.log(id);
+  } catch (err) {
+    alert("eee");
+  }
+}
     const SaveAction = async() =>{
       let parsePrice = parseInt(price,10);
       try {
 
          await addDoc(collection(db,"userAction"),{
+          id:id,
           name:name,
           price:parsePrice,
+          createAt:Timestamp.now(),
         });
        // parseInt(price,10);
-        navigate("Home");
+        navigate("Home",{
+          info:id,
+        });
       } catch (err) {
         alert(console.error("Error adding document: ", err));
       }
