@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from "styled-components/native";
 import colors from '../colors';
-import { collection, deleteDoc, doc, getDocs, getFirestore, query, Timestamp, where } from "firebase/firestore";
+import { collection, deleteDoc, deleteField, doc, getDocs, getFirestore, query, Timestamp, updateDoc, where } from "firebase/firestore";
 import app from '../firebaseConfig';
 import { FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,8 +157,16 @@ const History = ({route,navigation:{navigate}}) => {
         
     }
   const EditToggle = ()=> setEdit((prev) =>!prev);
- const EditDelete = async({item})=> {
- //const ok = window.confirm("asd");
+
+ const EditDelete = async()=> {
+  const ok = window.confirm("정말 삭제하시겠습니까?");
+  if(ok){
+    const docRef = doc(db, "userAction");
+    await deleteDoc(docRef);
+     
+  }
+ 
+ 
   //const userRef=collection(db,"userAction");
  //await deleteDoc(doc(db,"userAction"))
  //await db.doc(`userAction/${}`).delete();

@@ -8,5 +8,6 @@ const colors = {
   PRIMARY_DARK: "#3a3a3c",
   PRIMARY_LIGHT: "#ffffff",
   PRIMARY_MIDDLE: "#f2f2f7",
+  ORANGE_LOGO_COLOR: "#FF782D",
   };
   export default colors;

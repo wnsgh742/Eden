@@ -1,32 +1,40 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { getAuth } from 'firebase/auth';
+import { getAnalytics, setUserProperties } from 'firebase/analytics';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import Navigator from './navigator';
+import OutNavigator from './outNavigator';
+import {Helmet} from "react-helmet";
 
 export default function App() {
 
   const [loading, setLoading] = useState(false);
  const [userObj, setUserObj] = useState(null);
- const [init, setInit] = useState(false);
-  const onFinshed = ()=> setLoading(true);
+
 const auth=getAuth();
 
+const analytics = getAnalytics();
+
+//const user = auth.currentUser;
   useEffect(()=>{
-    auth.onAuthStateChanged((user)=>{
+   
+    onAuthStateChanged(auth, (user)=>{
      if(user){
        setLoading(true);
-       setUserObj(user);
-     
+       setUserObj(user.uid);
+      setUserProperties(analytics,{user_info : user});
      }else{
        setLoading(false);
      }
-     setInit(true);
+    
     })
    },[]);
   return (
    
     <NavigationContainer>
-    <Navigator userObj={userObj}/>
+         
+       
+   {loading ? <Navigator userObj={userObj} />: <OutNavigator />}
     </NavigationContainer>
     
   );

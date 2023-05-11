@@ -1,10 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {View, Text, Button,  TextInput, FlatList, ScrollView, RefreshControl, TouchableOpacity} from 'react-native';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import {TouchableOpacity} from 'react-native';
 import styled from 'styled-components/native';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import colors from '../colors';
-import { Ionicons } from "@expo/vector-icons";
-import { addDoc, collection, getDocs, getFirestore, orderBy, query, Timestamp, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, getFirestore, orderBy, query, setDoc, Timestamp, where } from "firebase/firestore";
 import app from '../firebaseConfig';
 import { useIsFocused } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
@@ -12,45 +10,30 @@ import ProgressBar from 'react-native-progress/Bar';
 import img from '../assets/backgroundLight.png';
 import img2 from '../assets/Main.png';
 import { Linking } from 'react-native';
+import { getAuth, signOut } from 'firebase/auth';
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../responsive';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 const SetHome = styled.View``;
 const HomeView = styled.View`
-    width: 24.375rem;
-  height: 52.75rem;
-  padding: 3.5rem 0.625rem 1.5rem 0.688rem;
+    width: ${SCREEN_WIDTH};
+  height: ${SCREEN_HEIGHT};
+ // padding: 3.5rem 0.625rem 1.5rem 0.688rem;
     background-image: url(${img});
     
 `;
 const HomeBlurView= styled.View`
-   width: 24.375rem;
-   height: 52.75rem;
-  padding: 11.625rem 0.625rem 1.5rem 0.688rem;
+   width: ${SCREEN_WIDTH};
+  height: ${SCREEN_HEIGHT};
+ // padding: 11.625rem 0.625rem 1.5rem 0.688rem;
 
   background-image: url(${img2});
 
 `;
-const HomeButton = styled.TouchableOpacity`
-  position: absolute;
-  bottom: 50px;
-  right: 50px;
-  height: 80px;
-  width: 80px;
-  border-radius: 40px;
-  justify-content: center;
-  align-items: center;
-  background-color: ${colors.btnColor};
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-`;
 
 
-
-const GoBack = styled.TouchableOpacity`
-  width: 24.375rem;
-  height: 3.563rem;
-  
-`;
 const WirteView = styled.View`
   border-radius: 30px;
-  
+ 
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -58,7 +41,8 @@ const WirteView = styled.View`
   width: 19.688rem;
   height: 17.563rem;
   gap: 17px;
-  margin: 0 1.75rem 15.938rem 1.625rem;
+  margin: 10rem 1.75rem 15.938rem 1.625rem;
+  //margin-bottom: 30;
   padding: 2.188rem 0 0;
   background-color: ${colors.PRIMARY_GRARY_LOGO_COLOR};
 `;
@@ -125,40 +109,43 @@ const Cancle = styled.Text`
   color: ${colors.SECONDARY_RED};
 `;
 const BottomView = styled.View`
-  width: 369;
-  height: 98;
-  margin: 12.313rem 0 0;
-  margin-top: 0;
+  width: 350;
+  height: 88;
+ margin-left: 1rem;
+ margin: 3.375rem 0.75rem 0;
+ //margin: 0 1.75rem 3rem 1rem;
   padding: 0.313rem 1.438rem 0.313rem 2rem;
   object-fit: contain;
   flex-direction: row;
   background-color: rgba(194,194,194,1);
-  border-radius: 23px;
-  
+  border-radius: 24px;
+ align-items: center;
+  justify-content: space-between;
 `;
 
 const BottomImage = styled.Image`
-  width: 3.75rem;
-  height: 5rem;
+  width: 3rem;
+  height: 4rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 4px;
-  margin: 0.5rem 3.875rem 0 0;
+ // margin: 0.5rem 3.875rem 0 0;
   padding: 0;
   object-fit: contain;
 `;
 const WidgetView = styled.View`
   width: 21rem;
-  height: 21rem;
+  height: ${SCREEN_HEIGHT/2};
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 48px;
-  margin: 0 1.063rem 3.313rem 1rem;
-  padding: 3.375rem 2.5rem;
+  margin: 0 1.063rem 2.313rem 1rem;
+  margin-top: 20;
+ // padding: 3.375rem 2.5rem;
   border-radius: 34.1px;
  
   background-color: ${colors.PRIMARY_TEXT};
@@ -168,7 +155,7 @@ const WidgetView = styled.View`
 const WidgetTitle = styled.Text`
 
   width: 16rem;
-  height: 4.5rem;
+  height: 3.5rem;
   flex-grow: 0;
   font-size: 3.0rem;
   font-weight: 900;
@@ -206,14 +193,25 @@ const WidgetTextTwo = styled.Text`
   text-align: left;
   color: ${colors.PRIMARY_LIGHT};
 `;
+const SecondTotalView = styled.View`
+  flex-direction: row;
+  margin-left: 1rem;
+`;
 const SecondView = styled.TouchableOpacity`
- 
+  
+  
 `;
 const SecondImage = styled.Image`
  width: 3.75rem;
   height: 5rem;
-  margin: 0.313rem 18.313rem 12.313rem 1rem;
+ 
+ // margin: 0.313rem 18.313rem 12.313rem 1rem;
   object-fit: contain;
+`;
+const SecondImage2 = styled.Image`
+width: 3.75rem;
+  height: 5rem;
+  margin-left: 2rem;
 `;
 const ProgressView = styled.View`
   width: 15.625rem;
@@ -237,8 +235,12 @@ const ProgressPercent = styled.Text`
   text-align: right;
   color: ${colors.LOGO_COLOR_BLUE};
 `;
-const Home = ({route,navigation:{navigate}})=>{
-    const [userId, setUserId] = useState(route.params.info);
+const Home = ({navigation:{navigate}})=>{
+  const auth = getAuth();
+  const obj = auth.currentUser.uid;
+  console.log(obj);
+  const analytics = getAnalytics();
+    const [userId, setUserId] = useState(obj);
     const priceInput = useRef();
     const [writeMode, setWriteMode] = useState(false);
     const [authLoad, setAuthLoad] = useState(); //myName.name
@@ -257,7 +259,7 @@ const Home = ({route,navigation:{navigate}})=>{
    const SaveAction = async() =>{
     let parsePrice = parseInt(price,10);
     try {
-
+     // setDoc(doc(db, "cities", "LA"),
        await addDoc(collection(db,"userAction"),{
         id:userId,
         name:name,
@@ -337,12 +339,13 @@ const Home = ({route,navigation:{navigate}})=>{
 const Instar = ()=>{
   Linking.openURL(url);
 }
+
 const url = "https://www.instagram.com/we_mlbw/";
   
   const isFocused = useIsFocused();
     useEffect(()=>{
       get();
-      console.log(firstPrice/final);
+      
     },[isFocused]);
 
         return (
@@ -386,26 +389,13 @@ const url = "https://www.instagram.com/we_mlbw/";
            </WirteView>
 
 
-           <BottomView>
-            <TouchableOpacity  >
-              <BottomImage source={require('../assets/HomeBottomFirst.png')}/>
-              
-            </TouchableOpacity >
-            <TouchableOpacity onPress={WriteBox}>
-            <BottomImage source={require('../assets/HomeBottomSecond.png')}/>
-              
-            </TouchableOpacity>
-            <TouchableOpacity onPress={()=>navigate("Message")}>
-            <BottomImage source={require('../assets/HomeBottomThird.png')}/>
-             
-            </TouchableOpacity>
-           </BottomView>
+          
           
            </HomeBlurView> 
             
            :
            <HomeView>
-           
+            
            <WidgetView>
             <WidgetTextOne>남은 금액</WidgetTextOne>
             <WidgetTitle>{final}원</WidgetTitle>
@@ -421,26 +411,28 @@ const url = "https://www.instagram.com/we_mlbw/";
             </ProgressView>
             <WidgetTextTwo>목표 금액   {firstPrice}원</WidgetTextTwo>
            </WidgetView>
-          
+          <SecondTotalView>
            <SecondView onPress={Instar}>
-            <SecondImage source={require('../assets/Instargram.png')}/>
+            <SecondImage source={require('../assets/Instargram3x.png')}/>  
            </SecondView>
-          
-          
+          <SecondView onPress={()=>navigate("MLBW")}>
+            <SecondImage2 source={require('../assets/MLBW.png')}/>
+          </SecondView>
+          </SecondTotalView>
           
            <BottomView>
             <TouchableOpacity  onPress={()=>navigate("History",{
            info:userId,
           })}>
-              <BottomImage source={require('../assets/HomeBottomFirst.png')}/>
+              <BottomImage source={require('../assets/History3x.png')}/>
               
             </TouchableOpacity >
             <TouchableOpacity onPress={WriteBox}>
-            <BottomImage source={require('../assets/HomeBottomSecond.png')}/>
+            <BottomImage source={require('../assets/Write3x.png')}/>
               
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>navigate("Message",{info:userId, delete:del})}>
-            <BottomImage source={require('../assets/HomeBottomThird.png')}/>
+            <BottomImage source={require('../assets/NomalMessage.png')}/>
              
             </TouchableOpacity>
            </BottomView>
